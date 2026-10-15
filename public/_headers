@@ -1,0 +1,16 @@
+# Cabeçalhos de segurança (Netlify). Valem para todas as páginas do site.
+/*
+  # Só carrega scripts do próprio site; bloqueia código injetado (XSS)
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.pexels.com https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  # Ninguém consegue colocar o site dentro de outro site (clickjacking)
+  X-Frame-Options: DENY
+  # Sempre HTTPS
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# O painel nunca deve ficar guardado em cache nem aparecer no Google
+/admin
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
