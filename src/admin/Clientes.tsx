@@ -18,7 +18,7 @@ import {
   type Customer,
   type Lead,
 } from './lib';
-import { Button, Card, ErrorText, Field, Modal, PageHeader, Spinner, inputCls } from './ui';
+import { Button, Card, ErrorText, Field, Modal, PageHeader, Spinner, inputCls, inputAutoCls } from './ui';
 
 type Stats = { count: number; spent: number; last: string | null; unpaid: number };
 
@@ -98,7 +98,7 @@ export default function Clientes() {
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nome, telefone ou etiqueta" className={`${inputCls} pl-9`} />
         </div>
-        <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className={`${inputCls} w-auto`}>
+        <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className={inputAutoCls}>
           <option value="recent">Mais recentes</option>
           <option value="spent">Quem mais gastou</option>
           <option value="name">Nome (A–Z)</option>

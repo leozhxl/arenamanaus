@@ -104,3 +104,6 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
 export function ErrorText({ children }: { children: ReactNode }) {
   return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{children}</p>;
 }
+
+/** Mesmo visual do inputCls, mas com a largura do conteúdo (para filtros lado a lado) */
+export const inputAutoCls = inputCls.replace('w-full ', 'w-auto ');

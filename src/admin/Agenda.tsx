@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Ban, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Ban, ChevronLeft, ChevronRight, LayoutGrid, Plus, Table2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { SPORT_LABELS, type Sport } from '@/lib/types';
 import ReservationModal from './ReservationModal';
+import AgendaPlanilha from './AgendaPlanilha';
 import { useDataChanged } from './realtime';
 import {
   DAY_END,
@@ -20,7 +21,7 @@ import {
   type AdminReservation,
   type CourtBlock,
 } from './lib';
-import { Button, ErrorText, Field, Modal, PageHeader, Spinner, inputCls } from './ui';
+import { Button, ErrorText, Field, Modal, PageHeader, Spinner, inputCls, inputAutoCls } from './ui';
 
 const ROW = 64; // altura de 1 hora na grade, em px
 const HOURS = Array.from({ length: (DAY_END - DAY_START) / 60 }, (_, i) => DAY_START + i * 60);
@@ -42,6 +43,22 @@ export default function Agenda() {
   const [modal, setModal] = useState<{ reservation?: AdminReservation; preset?: Partial<AdminReservation> } | null>(null);
   const [blockModal, setBlockModal] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [view, setView] = useState<'grade' | 'planilha'>(() => {
+    try {
+      return localStorage.getItem('admin:agenda-view') === 'planilha' ? 'planilha' : 'grade';
+    } catch {
+      return 'grade';
+    }
+  });
+
+  const changeView = (v: 'grade' | 'planilha') => {
+    setView(v);
+    try {
+      localStorage.setItem('admin:agenda-view', v);
+    } catch {
+      // navegador sem armazenamento: só não lembra a escolha
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -98,9 +115,33 @@ export default function Agenda() {
     <div>
       <PageHeader
         title="Agenda"
-        subtitle="Clique num horário vazio para reservar. Clique numa reserva para editar."
+        subtitle={
+          view === 'grade'
+            ? 'Clique num horário vazio para reservar. Clique numa reserva para editar.'
+            : 'Todos os horários marcados no período. Clique numa linha para editar.'
+        }
         actions={
           <>
+            <div className="flex rounded-lg border border-ink/15 bg-white p-1" role="tablist" aria-label="Modo de visualização">
+              {(
+                [
+                  ['grade', 'Grade', LayoutGrid],
+                  ['planilha', 'Planilha', Table2],
+                ] as const
+              ).map(([id, label, Icon]) => (
+                <button
+                  key={id}
+                  role="tab"
+                  aria-selected={view === id}
+                  onClick={() => changeView(id)}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition ${
+                    view === id ? 'bg-ink text-foam' : 'text-ink/60 hover:bg-ink/5'
+                  }`}
+                >
+                  <Icon size={15} /> {label}
+                </button>
+              ))}
+            </div>
             <Button variant="ghost" onClick={() => setBlockModal(true)}>
               <Ban size={16} /> Bloquear horário
             </Button>
@@ -111,13 +152,17 @@ export default function Agenda() {
         }
       />
 
+      {view === 'planilha' && <AgendaPlanilha courts={courts} />}
+
       {/* Navegação de datas */}
+      {view === 'grade' && (
+      <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1">
           <button onClick={() => setDate(addDays(date, -1))} className="rounded-lg border border-ink/15 bg-white p-2 hover:bg-ink/5" aria-label="Dia anterior">
             <ChevronLeft size={18} />
           </button>
-          <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className={`${inputCls} w-auto`} />
+          <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className={inputAutoCls} />
           <button onClick={() => setDate(addDays(date, 1))} className="rounded-lg border border-ink/15 bg-white p-2 hover:bg-ink/5" aria-label="Próximo dia">
             <ChevronRight size={18} />
           </button>
@@ -231,6 +276,8 @@ export default function Agenda() {
             ))}
           </div>
         </div>
+      )}
+      </>
       )}
 
       {modal && (
